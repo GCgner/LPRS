@@ -6,12 +6,14 @@ use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
+#[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -46,9 +48,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     private ?string $prenom = null;
 
+    /**
+     * @var Collection<int, Entreprise>
+     */
+    #[ORM\OneToMany(targetEntity: Entreprise::class, mappedBy: 'ref_utilisateur')]
+    private Collection $entreprises;
+
+    /**
+     * @var Collection<int, Professeur>
+     */
+    #[ORM\OneToMany(targetEntity: Professeur::class, mappedBy: 'ref_utilisateur', orphanRemoval: true)]
+    private Collection $professeurs;
+
+    /**
+     * @var Collection<int, Poste>
+     */
+    #[ORM\OneToMany(targetEntity: Poste::class, mappedBy: 'ref_utilisateur', orphanRemoval: true)]
+    private Collection $postes;
+
     public function __construct()
     {
         $this->etudiants = new ArrayCollection();
+        $this->entreprises = new ArrayCollection();
+        $this->professeurs = new ArrayCollection();
+        $this->postes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -176,6 +199,96 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPrenom(string $prenom): static
     {
         $this->prenom = $prenom;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Entreprise>
+     */
+    public function getEntreprises(): Collection
+    {
+        return $this->entreprises;
+    }
+
+    public function addEntreprise(Entreprise $entreprise): static
+    {
+        if (!$this->entreprises->contains($entreprise)) {
+            $this->entreprises->add($entreprise);
+            $entreprise->setRefUtilisateur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEntreprise(Entreprise $entreprise): static
+    {
+        if ($this->entreprises->removeElement($entreprise)) {
+            // set the owning side to null (unless already changed)
+            if ($entreprise->getRefUtilisateur() === $this) {
+                $entreprise->setRefUtilisateur(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Professeur>
+     */
+    public function getProfesseurs(): Collection
+    {
+        return $this->professeurs;
+    }
+
+    public function addProfesseur(Professeur $professeur): static
+    {
+        if (!$this->professeurs->contains($professeur)) {
+            $this->professeurs->add($professeur);
+            $professeur->setRefUtilisateur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProfesseur(Professeur $professeur): static
+    {
+        if ($this->professeurs->removeElement($professeur)) {
+            // set the owning side to null (unless already changed)
+            if ($professeur->getRefUtilisateur() === $this) {
+                $professeur->setRefUtilisateur(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Poste>
+     */
+    public function getPostes(): Collection
+    {
+        return $this->postes;
+    }
+
+    public function addPoste(Poste $poste): static
+    {
+        if (!$this->postes->contains($poste)) {
+            $this->postes->add($poste);
+            $poste->setRefUtilisateur($this);
+        }
+
+        return $this;
+    }
+
+    public function removePoste(Poste $poste): static
+    {
+        if ($this->postes->removeElement($poste)) {
+            // set the owning side to null (unless already changed)
+            if ($poste->getRefUtilisateur() === $this) {
+                $poste->setRefUtilisateur(null);
+            }
+        }
 
         return $this;
     }

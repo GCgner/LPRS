@@ -35,9 +35,23 @@ class Etudiant
     #[ORM\OneToMany(targetEntity: Alumni::class, mappedBy: 'ref_etudiant', orphanRemoval: true)]
     private Collection $alumnis;
 
+    /**
+     * @var Collection<int, LinkEtudiantEvenement>
+     */
+    #[ORM\OneToMany(targetEntity: LinkEtudiantEvenement::class, mappedBy: 'ref_etudiant')]
+    private Collection $linkEtudiantEvenements;
+
+    /**
+     * @var Collection<int, LinkEtudiantOffre>
+     */
+    #[ORM\OneToMany(targetEntity: LinkEtudiantOffre::class, mappedBy: 'ref_etudiant', orphanRemoval: true)]
+    private Collection $linkEtudiantOffres;
+
     public function __construct()
     {
         $this->alumnis = new ArrayCollection();
+        $this->linkEtudiantEvenements = new ArrayCollection();
+        $this->linkEtudiantOffres = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -117,6 +131,66 @@ class Etudiant
             // set the owning side to null (unless already changed)
             if ($alumni->getRefEtudiant() === $this) {
                 $alumni->setRefEtudiant(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, LinkEtudiantEvenement>
+     */
+    public function getLinkEtudiantEvenements(): Collection
+    {
+        return $this->linkEtudiantEvenements;
+    }
+
+    public function addLinkEtudiantEvenement(LinkEtudiantEvenement $linkEtudiantEvenement): static
+    {
+        if (!$this->linkEtudiantEvenements->contains($linkEtudiantEvenement)) {
+            $this->linkEtudiantEvenements->add($linkEtudiantEvenement);
+            $linkEtudiantEvenement->setRefEtudiant($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLinkEtudiantEvenement(LinkEtudiantEvenement $linkEtudiantEvenement): static
+    {
+        if ($this->linkEtudiantEvenements->removeElement($linkEtudiantEvenement)) {
+            // set the owning side to null (unless already changed)
+            if ($linkEtudiantEvenement->getRefEtudiant() === $this) {
+                $linkEtudiantEvenement->setRefEtudiant(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, LinkEtudiantOffre>
+     */
+    public function getLinkEtudiantOffres(): Collection
+    {
+        return $this->linkEtudiantOffres;
+    }
+
+    public function addLinkEtudiantOffre(LinkEtudiantOffre $linkEtudiantOffre): static
+    {
+        if (!$this->linkEtudiantOffres->contains($linkEtudiantOffre)) {
+            $this->linkEtudiantOffres->add($linkEtudiantOffre);
+            $linkEtudiantOffre->setRefEtudiant($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLinkEtudiantOffre(LinkEtudiantOffre $linkEtudiantOffre): static
+    {
+        if ($this->linkEtudiantOffres->removeElement($linkEtudiantOffre)) {
+            // set the owning side to null (unless already changed)
+            if ($linkEtudiantOffre->getRefEtudiant() === $this) {
+                $linkEtudiantOffre->setRefEtudiant(null);
             }
         }
 
